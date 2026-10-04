@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>推し画像コピー</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; margin: 0; }
+    h1 { font-size: 1.1rem; color: #333; text-align: center; }
+    .card { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .title { font-weight: bold; font-size: 0.95rem; }
+    .btn { background: #ff477e; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; display: none; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ 推し顔直視防止リスト</h1>
+
+  <!-- リスト1 -->
+  <div class="card">
+    <span class="title">01_笑顔（ライブ衣装）</span>
+    <button class="btn" onclick="copyImage('./sample1.png')">コピー</button>
+  </div>
+
+  <!-- リスト2 -->
+  <div class="card">
+    <span class="title">02_横顔（私服）</span>
+    <button class="btn" onclick="copyImage('./sample2.png')">コピー</button>
+  </div>
+
+  <div id="toast" class="toast">コピーしました！</div>
+
+  <script>
+    async function copyImage(path) {
+      try {
+        const res = await fetch(path);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        const t = document.getElementById('toast');
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 1500);
+      } catch (e) {
+        alert('コピーに失敗しました。画像名や形式（.png）を確認してください。');
+      }
+    }
+  </script>
+</body>
+</html>
