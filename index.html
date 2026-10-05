@@ -3,46 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>推し画像コピー</title>
+  <title>推し顔直視防止リスト</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; margin: 0; }
-    h1 { font-size: 1.1rem; color: #333; text-align: center; }
-    .card { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .title { font-weight: bold; font-size: 0.95rem; }
-    .btn { background: #ff477e; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; display: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f5f5f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .copy-btn {
+      background-color: #ff4785;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    .copy-btn:active {
+      transform: scale(0.95);
+    }
+    .copy-btn.success {
+      background-color: #4cab60;
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: none;
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
-  <h1>🛡️ 推し顔直視防止リスト</h1>
 
-  <!-- リスト1 -->
-  <div class="card">
-    <span class="title">01_笑顔（ライブ衣装）</span>
-    <button class="btn" onclick="copyImage('./sample1.png')">コピー</button>
+<div class="container">
+  <div class="header">
+    🛡️ 推し顔直視防止リスト
   </div>
 
-  <!-- リスト2 -->
+  <!-- リストアイテム 1 -->
   <div class="card">
-    <span class="title">02_横顔（私服）</span>
-    <button class="btn" onclick="copyImage('./sample2.png')">コピー</button>
+    <div class="card-title">01_笑顔（ライブ衣装）</div>
+    <!-- data-src に画像のファイル名を正確に指定してください -->
+    <button class="copy-btn" data-src="image_FE7A4A14-46F6-4D20-9D7A-3E3F40562D58.png" onclick="copyImage(this)">コピー</button>
   </div>
 
-  <div id="toast" class="toast">コピーしました！</div>
+  <!-- リストアイテム 2 -->
+  <div class="card">
+    <div class="card-title">02_横顔（私服）</div>
+    <!-- data-src に画像のファイル名を正確に指定してください -->
+    <button class="copy-btn" data-src="image_FEBA4ACF-FC20-4F58-A2E2-1A1A893D6B5E.png" onclick="copyImage(this)">コピー</button>
+  </div>
+</div>
 
-  <script>
-    async function copyImage(path) {
+<div id="toast" class="toast">クリップボードにコピーしました！</div>
+
+<script>
+  async function copyImage(button) {
+    const imageSrc = button.getAttribute('data-src');
+    
+    try {
+      // 1. 画像を取得
+      const response = await fetch(imageSrc);
+      
+      // 画像が見つからず404エラー等の場合は処理を中断
+      if (!response.ok) {
+        throw new Error('画像ファイルが見つかりません (HTTP ' + response.status + ')');
+      }
+
+      const blob = await response.blob();
+
+      // 2. クリップボードに画像（PNG等）として書き込む
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob
+        })
+      ]);
+
+      // 成功時の表示変化
+      showToast('画像をコピーしました！');
+      button.textContent = '完了！';
+      button.classList.add('success');
+      setTimeout(() => {
+        button.textContent = 'コピー';
+        button.classList.remove('success');
+      }, 2000);
+
+    } catch (err) {
+      console.error('コピー失敗:', err);
+      
+      // 画像としてコピー失敗した場合はフォールバック（画像のWeb URLをテキストとしてコピー）
       try {
-        const res = await fetch(path);
-        const blob = await res.blob();
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-        const t = document.getElementById('toast');
-        t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 1500);
-      } catch (e) {
-        alert('コピーに失敗しました。画像名や形式（.png）を確認してください。');
+        const fullUrl = new URL(imageSrc, window.location.href).href;
+        await navigator.clipboard.writeText(fullUrl);
+        showToast('画像URLをコピーしました！');
+      } catch (textErr) {
+        alert('コピーに失敗しました。画像ファイル名を確認してください。');
       }
     }
-  </script>
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2000);
+  }
+</script>
+
 </body>
 </html>
